@@ -278,7 +278,8 @@
     background: var(--green-pale);
     border-radius: 8px;
     padding: 36px;
-    border-left: 4px solid var(--green-mid);
+    border: 2px solid var(--border);
+    border-top: 4px solid var(--green-mid);
   }
 
   .mission-aims h3 {
@@ -433,9 +434,8 @@
   }
 
   .community-note {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--amber-container);
+    background: var(--amber-light);
+    border: 1px solid var(--amber-container);
     border-radius: 6px;
     padding: 24px 28px;
     font-size: 15px;
@@ -541,8 +541,9 @@
 
   .form-group input:focus,
   .form-group textarea:focus {
-    border-color: var(--amber);
+    border-color: var(--amber-container);
     background: rgba(255,255,255,0.11);
+    outline: none;
   }
 
   .form-group textarea {
@@ -601,6 +602,13 @@
     text-align: right;
   }
 
+  /* FOCUS STYLES */
+  :focus-visible {
+    outline: 2px solid var(--amber-container);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
   /* DIVIDER */
   .divider {
     width: 48px;
@@ -624,7 +632,7 @@
       right: 0;
       background: var(--green-dark);
       padding: 20px 24px;
-      border-bottom: 3px solid var(--amber);
+      border-bottom: 3px solid var(--amber-container);
       gap: 20px;
     }
 
@@ -656,10 +664,10 @@
   }
 
   /* Hero load animations */
-  .hero-label { animation: fadeUp 0.5s ease both; }
-  .hero h1 { animation: fadeUp 0.5s 0.1s ease both; }
-  .hero-desc { animation: fadeUp 0.5s 0.2s ease both; }
-  .hero-actions { animation: fadeUp 0.5s 0.3s ease both; }
+  .hero-label { animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+  .hero h1 { animation: fadeUp 0.6s 0.08s cubic-bezier(0.16,1,0.3,1) both; }
+  .hero-desc { animation: fadeUp 0.6s 0.16s cubic-bezier(0.16,1,0.3,1) both; }
+  .hero-actions { animation: fadeUp 0.6s 0.24s cubic-bezier(0.16,1,0.3,1) both; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -709,7 +717,7 @@
   .reveal-stagger > * {
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
   }
 
   .reveal-stagger.visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0s; }
@@ -735,7 +743,7 @@
     inset: 0;
     background: rgba(255,255,255,0.12);
     transform: translateX(-101%);
-    transition: transform 0.25s ease;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
   }
 
   .btn-primary:hover::after {
@@ -753,7 +761,7 @@
     inset: 0;
     background: rgba(255,255,255,0.07);
     transform: translateX(-101%);
-    transition: transform 0.25s ease;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
   }
 
   .btn-outline:hover::after {
@@ -1116,7 +1124,7 @@
       <div class="mission-text">
         <p>Old Trafford Action Group (OTAG) aims to improve the environment of the Old Trafford area.</p>
         <p>We do this by <strong>lobbying the local council</strong> directly and working alongside existing pressure groups and community organisations across the area.</p>
-        <p>We meet every three months with Amey, Trafford managers, and local councillors — and we encourage residents to get involved in practical work on the ground, from litter picking to gardening and growing.</p>
+        <p>We meet every three months with Amey, Trafford managers, and local councillors, and we encourage residents to get involved in practical work on the ground: from litter picking to gardening and growing.</p>
       </div>
       <div class="mission-aims">
         <h3>What We Do</h3>
@@ -1141,7 +1149,7 @@
     <div class="divider"></div>
     <h3 style="font-family:'Fraunces',serif; font-size:28px; color:var(--white); margin-bottom:8px;">Seymour Park</h3>
     <div style="width:48px; height:3px; background:var(--amber-container); border-radius:2px; margin-bottom:32px;"></div>
-    <p class="section-intro">Drag the slider to see the before and after at Seymour Park — cleared, tidied, and maintained by OTAG volunteers.</p>
+    <p class="section-intro">Drag the slider to see the before and after at Seymour Park, cleared, tidied, and maintained by OTAG volunteers.</p>
 
     <div class="slider-wrap" id="slider">
       <!-- After (bottom layer) -->
@@ -1229,7 +1237,7 @@
     <div class="meetings-grid">
       <div class="meetings-text">
         <p>Our meetings are open to all residents. Come along to find out what we're working on, raise issues affecting your street, or just meet your neighbours.</p>
-        <p>You don't need any experience or prior commitment — just turn up.</p>
+        <p>You don't need any experience or prior commitment. Just turn up.</p>
       </div>
       <div class="meetings-detail">
         <h3>Meeting Details</h3>
@@ -1249,12 +1257,12 @@
     <div class="divider"></div>
     <div class="membership-grid">
       <div class="membership-text">
-        <p>Membership is free and open to all Old Trafford residents. Whether you want to get stuck in at a litter pick, join us at a council meeting, or simply stay informed about what's happening in your area — there's a place for you.</p>
+        <p>Membership is free and open to all Old Trafford residents. Whether you want to get stuck in at a litter pick, join us at a council meeting, or simply stay informed about what's happening in your area: there's a place for you.</p>
         <p>Leave your details and we'll send you information about the group and how to get involved.</p>
       </div>
       <div class="membership-card">
         <h3>Sign Up</h3>
-        <p class="sub">Free to join — open to all Old Trafford residents</p>
+        <p class="sub">Free to join, open to all Old Trafford residents</p>
         <form id="membershipForm" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
           <div class="form-group">
             <label for="mem-name" style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--stone-light);">Your Name</label>
@@ -1301,7 +1309,7 @@
     <div class="divider"></div>
     <div class="coming-soon-block">
       <h3>Coming Soon</h3>
-      <p>We run ongoing events that residents can get involved in — from litter picks and gardening to growing fruit and veg. More details to follow.</p>
+      <p>We run ongoing events that residents can get involved in: litter picks, gardening, and growing fruit and veg. More details to follow.</p>
       <br/>
       <a href="#contact" class="btn-primary" style="display:inline-block;">Stay in the Loop</a>
     </div>
@@ -1377,7 +1385,7 @@
     fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' })
       .then(() => {
         formEl.reset();
-        msgEl.textContent = 'Thank you — we\'ll be in touch soon!';
+        msgEl.textContent = 'Thank you. We\'ll be in touch soon!';
         msgEl.style.display = 'block';
         btn.disabled = false;
         btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
