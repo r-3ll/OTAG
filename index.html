@@ -639,7 +639,11 @@
 
     .form-row { grid-template-columns: 1fr; }
 
-    .hero { padding: 64px 20px 56px; }
+    .work-gallery { grid-template-columns: 1fr 1fr !important; }
+
+    .slider-before-wrap img { width: 100%; }
+
+    .hero { padding: 48px 20px 56px; }
 
     .footer-inner { flex-direction: column; align-items: flex-start; }
     .footer-copy { text-align: left; }
@@ -656,6 +660,16 @@
   .hero h1 { animation: fadeUp 0.5s 0.1s ease both; }
   .hero-desc { animation: fadeUp 0.5s 0.2s ease both; }
   .hero-actions { animation: fadeUp 0.5s 0.3s ease both; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+    .reveal-stagger > * { opacity: 1; transform: none; }
+    .reveal-stagger.visible > * { transition-delay: 0s !important; }
+  }
 
   /* Hero word underline */
   .hero h1 em {
@@ -1389,7 +1403,10 @@
   // Mobile nav
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('navLinks');
-  hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+  hamburger.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open');
+    hamburger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+  });
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => navLinks.classList.remove('open'));
   });
@@ -1486,12 +1503,18 @@
   const lightboxClose = document.getElementById('lightboxClose');
 
   document.querySelectorAll('.work-gallery-item').forEach(item => {
-    item.addEventListener('click', () => {
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('aria-label', 'View photo');
+    const openLightbox = () => {
       lightboxImg.src = item.querySelector('img').src;
-      lightboxImg.alt = item.querySelector('img').alt;
+      lightboxImg.alt = item.querySelector('img').alt || '';
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
-    });
+      lightboxClose.focus();
+    };
+    item.addEventListener('click', openLightbox);
+    item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(); } });
   });
 
   function closeLightbox() {
