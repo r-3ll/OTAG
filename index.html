@@ -1238,8 +1238,7 @@
       <div class="membership-card">
         <h3>Sign Up</h3>
         <p class="sub">Free to join — open to all Old Trafford residents</p>
-        <form name="membership" method="POST" data-netlify="true" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
-          <input type="hidden" name="form-name" value="membership"/>
+        <form id="membershipForm" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
           <div class="form-group">
             <label for="mem-name" style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--stone-light);">Your Name</label>
             <input type="text" id="mem-name" name="name" placeholder="Jane Smith" required style="background:var(--cream); border:1px solid var(--border); border-radius:4px; padding:10px 14px; font-size:14px; color:var(--ink); font-family:'Be Vietnam Pro',sans-serif; outline:none; width:100%;"/>
@@ -1249,6 +1248,7 @@
             <input type="email" id="mem-email" name="email" placeholder="jane@example.com" required style="background:var(--cream); border:1px solid var(--border); border-radius:4px; padding:10px 14px; font-size:14px; color:var(--ink); font-family:'Be Vietnam Pro',sans-serif; outline:none; width:100%;"/>
           </div>
           <button type="submit" class="btn-primary" style="border:none; cursor:pointer; font-family:'Be Vietnam Pro',sans-serif; width:100%; text-align:center; margin-top:4px;">Send Me Information</button>
+          <p id="membershipMsg" style="display:none; font-size:14px; color:var(--green-mid); text-align:center; margin-top:4px;"></p>
         </form>
       </div>
     </div>
@@ -1301,16 +1301,15 @@
       <div class="contact-text">
         <p>Have a question, want to get involved, or want to report an issue in Old Trafford? Fill in the form and we'll get back to you.</p>
       </div>
-      <form class="contact-form" name="contact" method="POST" data-netlify="true">
-        <input type="hidden" name="form-name" value="contact"/>
+      <form id="contactForm" class="contact-form">
         <div class="form-row">
           <div class="form-group">
-            <label for="name">Your Name</label>
-            <input type="text" id="name" name="name" placeholder="Jane Smith" required/>
+            <label for="contact-name">Your Name</label>
+            <input type="text" id="contact-name" name="name" placeholder="Jane Smith" required/>
           </div>
           <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" placeholder="jane@example.com" required/>
+            <label for="contact-email">Email Address</label>
+            <input type="email" id="contact-email" name="email" placeholder="jane@example.com" required/>
           </div>
         </div>
         <div class="form-group">
@@ -1318,6 +1317,7 @@
           <textarea id="message" name="message" placeholder="What would you like to say?" required></textarea>
         </div>
         <button type="submit" class="btn-primary" style="border:none; cursor:pointer; font-family:'Be Vietnam Pro',sans-serif;">Send Message</button>
+        <p id="contactMsg" style="display:none; font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;"></p>
       </form>
     </div>
   </div>
@@ -1347,6 +1347,45 @@
 </footer>
 
 <script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzo2Y2-dcoLZKsPsWIgdVtx_P6CBJrukwVnrd2j72K3wDVhunwKlgvPDGchcMAI_VUMkA/exec';
+
+  function submitForm(formEl, sheet, msgEl) {
+    const btn = formEl.querySelector('button[type="submit"]');
+    const data = new FormData(formEl);
+    data.append('sheet', sheet);
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    fetch(SCRIPT_URL, { method: 'POST', body: data })
+      .then(r => r.json())
+      .then(res => {
+        if (res.result === 'success') {
+          formEl.reset();
+          msgEl.textContent = 'Thank you — we\'ll be in touch soon!';
+        } else {
+          msgEl.textContent = 'Something went wrong. Please try again.';
+        }
+        msgEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
+      })
+      .catch(() => {
+        msgEl.textContent = 'Something went wrong. Please try again.';
+        msgEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
+      });
+  }
+
+  document.getElementById('membershipForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    submitForm(this, 'Sign Up', document.getElementById('membershipMsg'));
+  });
+
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    submitForm(this, 'Contact', document.getElementById('contactMsg'));
+  });
+
   // Mobile nav
   const hamburger = document.getElementById('hamburger');
   const navLinks = document.getElementById('navLinks');
