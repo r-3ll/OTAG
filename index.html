@@ -1355,15 +1355,10 @@
     data.append('sheet', sheet);
     btn.disabled = true;
     btn.textContent = 'Sending…';
-    fetch(SCRIPT_URL, { method: 'POST', body: data })
-      .then(r => r.json())
-      .then(res => {
-        if (res.result === 'success') {
-          formEl.reset();
-          msgEl.textContent = 'Thank you — we\'ll be in touch soon!';
-        } else {
-          msgEl.textContent = 'Something went wrong. Please try again.';
-        }
+    fetch(SCRIPT_URL, { method: 'POST', body: data, mode: 'no-cors' })
+      .then(() => {
+        formEl.reset();
+        msgEl.textContent = 'Thank you — we\'ll be in touch soon!';
         msgEl.style.display = 'block';
         btn.disabled = false;
         btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
