@@ -1347,15 +1347,17 @@
 </footer>
 
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzo2Y2-dcoLZKsPsWIgdVtx_P6CBJrukwVnrd2j72K3wDVhunwKlgvPDGchcMAI_VUMkA/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwrqBN8KkLPPaAUwZAfOPERePpteLd_GLMrwnmQqR32Vg8XDzAYIN4Pvh4oZCfY4xI9w/exec';
 
   function submitForm(formEl, sheet, msgEl) {
     const btn = formEl.querySelector('button[type="submit"]');
-    const data = new FormData(formEl);
-    data.append('sheet', sheet);
+    const fields = new FormData(formEl);
+    const params = new URLSearchParams();
+    fields.forEach((val, key) => params.append(key, val));
+    params.append('sheet', sheet);
     btn.disabled = true;
     btn.textContent = 'Sending…';
-    fetch(SCRIPT_URL, { method: 'POST', body: data, mode: 'no-cors' })
+    fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' })
       .then(() => {
         formEl.reset();
         msgEl.textContent = 'Thank you — we\'ll be in touch soon!';
