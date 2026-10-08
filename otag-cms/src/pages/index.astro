@@ -21,7 +21,7 @@ const aims = s.aims ?? [];
 const aboutHtml = html(s.aboutText) ?? '';
 const meetingsHtml = html(s.meetingsText) ?? '';
 const membershipHtml = html(s.membershipText) ?? '';
-const formEndpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
+const formEndpoint = 'https://script.google.com/macros/s/AKfycbwwrqBN8KkLPPaAUwZAfOPERePpteLd_GLMrwnmQqR32Vg8XDzAYIN4Pvh4oZCfY4xI9w/exec';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -39,7 +39,6 @@ const formEndpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
 </head>
 <body data-form-endpoint={formEndpoint}>
 
-{!formEndpoint && <div class="test-banner">Test version: forms are switched off and nothing is sent.</div>}
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
@@ -325,7 +324,7 @@ const formEndpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
 
 <script is:inline>
 
-  const SCRIPT_URL = document.body.dataset.formEndpoint || '';
+  const SCRIPT_URL = document.body.dataset.formEndpoint;
 
   function submitForm(formEl, sheet, msgEl) {
     const btn = formEl.querySelector('button[type="submit"]');
@@ -335,13 +334,10 @@ const formEndpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
     params.append('sheet', sheet);
     btn.disabled = true;
     btn.textContent = 'Sending…';
-    const send = SCRIPT_URL
-      ? fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' })
-      : Promise.resolve();
-    send
+    fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' })
       .then(() => {
         formEl.reset();
-        msgEl.textContent = SCRIPT_URL ? 'Thank you. We\'ll be in touch soon!' : 'Test version: nothing was sent.';
+        msgEl.textContent = 'Thank you. We\'ll be in touch soon!';
         msgEl.style.display = 'block';
         btn.disabled = false;
         btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
