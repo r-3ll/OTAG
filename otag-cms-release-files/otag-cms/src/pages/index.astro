@@ -1,0 +1,517 @@
+---
+import '../styles/main.css';
+import { client, img, html, fmtDate, fmtTime } from '../lib/sanity.js';
+
+const s = (await client.fetch(`*[_type == "siteSettings"][0]`)) ?? {};
+const slideDocs = await client.fetch(`*[_type == "heroSlide"] | order(order asc){ "image": image, alt }`);
+const projectDocs = await client.fetch(`*[_type == "workProject"] | order(order asc){ title, intro, portrait, before, after, gallery[]{ image, alt, tag } }`);
+const newsDocs = await client.fetch(`*[_type == "newsPost" && defined(date)] | order(date desc){ title, date, summary, body, image, imageAlt }`);
+const meetingDocs = await client.fetch(`*[_type == "meeting" && date >= now()] | order(date asc){ title, date, location, details }`);
+const groups = await client.fetch(`*[_type == "group"] | order(order asc){ name, url }`);
+
+const slides = slideDocs.filter((x) => x.image).map((x) => ({ url: img(x.image, 1200), alt: x.alt ?? '' }));
+const projects = projectDocs.map((p) => ({
+  title: p.title, intro: p.intro, portrait: !!p.portrait,
+  beforeUrl: img(p.before, 1400), afterUrl: img(p.after, 1400),
+  gallery: (p.gallery ?? []).filter((g) => g.image).map((g) => ({ url: img(g.image, 900), alt: g.alt ?? '', tag: g.tag })),
+}));
+const news = newsDocs.map((n) => ({ title: n.title, date: n.date, summary: n.summary, bodyHtml: html(n.body), imageUrl: img(n.image, 800), imageAlt: n.imageAlt }));
+const meetings = meetingDocs;
+const aims = s.aims ?? [];
+const aboutHtml = html(s.aboutText) ?? '';
+const meetingsHtml = html(s.meetingsText) ?? '';
+const membershipHtml = html(s.membershipText) ?? '';
+const formEndpoint = 'https://script.google.com/macros/s/AKfycbwwrqBN8KkLPPaAUwZAfOPERePpteLd_GLMrwnmQqR32Vg8XDzAYIN4Pvh4oZCfY4xI9w/exec';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="description" content="Old Trafford Action Group (OTAG) is a residents' group working to improve the Old Trafford area through community action and direct lobbying of Trafford Council and Amey."/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Old Trafford Action Group</title>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" type="image/png" href="/favicon.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body data-form-endpoint={formEndpoint}>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Old Trafford Action Group</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about">About</a></li>
+      <li><a href="#news">News</a></li>
+      <li><a href="#meetings">Meetings</a></li>
+      <li><a href="#membership">Membership</a></li>
+      <li><a href="#community">Community</a></li>
+      <li><a href="#contact" class="nav-cta">Get Involved</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-label">{s.heroLabel ?? 'Old Trafford, Manchester'}</span>
+      <h1>{s.heroHeading ?? 'Making Old Trafford a cleaner, greener place to'} <em>{s.heroHeadingEmphasis ?? 'live'}<svg viewBox="0 0 80 18" preserveAspectRatio="none" aria-hidden="true"><path d="M1,5 C6,4 14,3.5 22,4.5 C32,5.5 42,3 52,4 C60,4.8 68,4 74,5.5 C76,6 78,6.5 79,6"/></svg></em></h1>
+      <p class="hero-desc">{s.heroDescription ?? "We're a residents' group taking direct action and putting pressure on Trafford Council and Amey to do the same. Everyone is welcome."}</p>
+      <div class="hero-actions">
+        <a href="#membership" class="btn-primary">Get Involved</a>
+        <a href="#about" class="btn-outline">Find Out More</a>
+      </div>
+    </div>
+    <div class="hero-carousel" aria-label="Photos of Old Trafford">
+      <div class="hero-carousel-track" id="carouselTrack">
+      {slides.map((sl) => (
+      <div class="hero-carousel-slide">
+        <img src={sl.url} alt={sl.alt}/>
+      </div>
+      ))}
+      </div><!-- /track -->
+      <div class="carousel-dots">
+        {slides.map((sl, i) => <button class={i === 0 ? 'carousel-dot active' : 'carousel-dot'} aria-label={`Photo ${i + 1}`}></button>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION / ABOUT -->
+<section class="mission" id="about">
+  <div class="section-inner">
+    <p class="section-label">About Us</p>
+    <h2 class="section-title">What We Stand For</h2>
+    <div class="divider"></div>
+    <div class="mission-grid">
+      <div class="mission-text" set:html={aboutHtml}></div>
+      <div class="mission-aims">
+        <h3>What We Do</h3>
+        <ul class="aims-list reveal-stagger">
+          {aims.map((a) => <li>{a}</li>)}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- OUR WORK -->
+<section class="our-work" id="our-work">
+  <div class="section-inner">
+    <p class="section-label">Our Work</p>
+    <h2 class="section-title">The Difference We Make</h2>
+    <div class="divider"></div>
+    {projects.map((p, idx) => (
+    <div style={idx > 0 ? 'margin-top: 64px;' : ''}>
+      <h3 style="font-family:'Fraunces',serif; font-size:28px; color:var(--white); margin-bottom:8px;">{p.title}</h3>
+      <div style="width:48px; height:3px; background:var(--amber-container); border-radius:2px; margin-bottom:32px;"></div>
+      {p.intro && <p class="section-intro" style="margin-bottom:24px;">{p.intro}</p>}
+      {p.beforeUrl && p.afterUrl && (<>
+      <div class="slider-wrap" id={idx === 0 ? 'slider' : `slider-${idx}`}>
+        <img class="slider-after" src={p.afterUrl} alt={p.title + ' after clean-up'}/>
+        <div class="slider-before-wrap" id={idx === 0 ? 'sliderBefore' : `sliderBefore-${idx}`}>
+          <img src={p.beforeUrl} alt={p.title + ' before clean-up'}/>
+        </div>
+        <div class="slider-handle" id={idx === 0 ? 'sliderHandle' : `sliderHandle-${idx}`}>
+          <div class="slider-line"></div>
+          <div class="slider-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 3 12 9 6"></polyline><polyline points="15 6 21 12 15 18"></polyline></svg>
+          </div>
+        </div>
+        <div class="slider-labels"><span class="slider-label">Before</span><span class="slider-label">After</span></div>
+      </div>
+      <p class="slider-caption">Drag to compare &larr; &rarr;</p>
+      </>)}
+      <div class="work-gallery" style="grid-template-columns: repeat(3, 1fr);">
+        {p.gallery.map((g) => (
+        <div class="work-gallery-item" style={p.portrait ? 'aspect-ratio: 3/4;' : ''}>
+          <img src={g.url} alt={g.alt} style={p.portrait ? 'object-position: center 20%;' : ''}/>
+          {g.tag && <span class="work-gallery-tag">{g.tag}</span>}
+        </div>
+        ))}
+      </div>
+    </div>
+    ))}
+  </div>
+</section>
+
+<!-- NEWS -->
+<section class="news" id="news">
+  <div class="section-inner">
+    <p class="section-label">Latest</p>
+    <h2 class="section-title">News & Updates</h2>
+    <div class="divider"></div>
+    {news.length > 0 ? (
+    <div class="news-list">
+      {news.map((n) => (
+      <article class="news-card">
+        {n.imageUrl && <img src={n.imageUrl} alt={n.imageAlt ?? n.title}/>}
+        <div class="news-card-body">
+          <p class="news-date">{fmtDate(n.date)}</p>
+          <h3>{n.title}</h3>
+          {n.summary && <p>{n.summary}</p>}
+          {n.bodyHtml && <div set:html={n.bodyHtml}></div>}
+        </div>
+      </article>
+      ))}
+    </div>
+    ) : (
+    <div class="coming-soon-block">
+      <h3>{s.newsEmptyTitle ?? 'Updates coming soon'}</h3>
+      <p>{s.newsEmptyText ?? "We'll be posting news, event updates, and reports from our council meetings here. Check back shortly."}</p>
+      <br/>
+      <a href="#membership" class="btn-primary" style="display:inline-block;">Sign up to stay informed</a>
+    </div>
+    )}
+  </div>
+</section>
+
+<!-- MEETINGS -->
+<section class="meetings" id="meetings">
+  <div class="section-inner">
+    <p class="section-label">Get Together</p>
+    <h2 class="section-title">Come to a Meeting</h2>
+    <div class="divider"></div>
+    <div class="meetings-grid">
+      <div class="meetings-text" set:html={meetingsHtml}></div>
+      <div class="meetings-detail">
+        <h3>Meeting Details</h3>
+        {meetings.length > 0 ? (
+          <ul class="meeting-list">
+            {meetings.map((mt) => (
+            <li class="meeting-item">
+              <strong>{mt.title}</strong>
+              <span>{fmtDate(mt.date, true)} at {fmtTime(mt.date)}</span>
+              {mt.location && <span>{mt.location}</span>}
+              {mt.details && <span>{mt.details}</span>}
+            </li>
+            ))}
+          </ul>
+        ) : (
+        <p style="color:rgba(255,255,255,0.65); font-size:15px; line-height:1.7;">{s.meetingsNote ?? 'We meet every three months with Amey, Trafford managers, and local councillors. Dates and locations are being confirmed — get in touch and we\'ll let you know as soon as details are set.'}</p>
+        )}
+        <br/>
+        <a href="#contact" class="btn-primary" style="display:inline-block; font-size:14px; padding:10px 20px;">Notify Me</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBERSHIP -->
+<section class="membership" id="membership">
+  <div class="section-inner">
+    <p class="section-label">Join Us</p>
+    <h2 class="section-title">Become a Member</h2>
+    <div class="divider"></div>
+    <div class="membership-grid">
+      <div class="membership-text" set:html={membershipHtml}></div>
+      <div class="membership-card">
+        <h3>Sign Up</h3>
+        <p class="sub">Free to join, open to all Old Trafford residents</p>
+        <form id="membershipForm" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+          <div class="form-group">
+            <label for="mem-name" style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--stone-light);">Your Name</label>
+            <input type="text" id="mem-name" name="name" placeholder="Jane Smith" required style="background:var(--cream); border:1px solid var(--border); border-radius:4px; padding:10px 14px; font-size:14px; color:var(--ink); font-family:'Be Vietnam Pro',sans-serif; outline:none; width:100%;"/>
+          </div>
+          <div class="form-group">
+            <label for="mem-email" style="font-size:12px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--stone-light);">Email Address</label>
+            <input type="email" id="mem-email" name="email" placeholder="jane@example.com" required style="background:var(--cream); border:1px solid var(--border); border-radius:4px; padding:10px 14px; font-size:14px; color:var(--ink); font-family:'Be Vietnam Pro',sans-serif; outline:none; width:100%;"/>
+          </div>
+          <button type="submit" class="btn-primary" style="border:none; cursor:pointer; font-family:'Be Vietnam Pro',sans-serif; width:100%; text-align:center; margin-top:4px;">Send Me Information</button>
+          <p id="membershipMsg" style="display:none; font-size:14px; color:var(--green-mid); text-align:center; margin-top:4px;"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMUNITY -->
+<section class="community" id="community">
+  <div class="section-inner">
+    <p class="section-label">Working Together</p>
+    <h2 class="section-title">Supporting Our Community</h2>
+    <div class="divider"></div>
+    <p class="section-intro">{s.communityIntro ?? "We're part of a wider network of groups working to improve Old Trafford. We're proud to support them all."}</p>
+    <div class="groups-grid reveal-stagger">
+      {groups.map((g) => g.url
+        ? <a href={g.url} target="_blank" rel="noopener" class="group-tag">{g.name}</a>
+        : <div class="group-tag">{g.name}</div>)}
+    </div>
+    <div class="community-note">
+      We work particularly closely with <strong>Love Old Trafford</strong>, sharing goals and supporting each other's work across the area. Our specific focus on lobbying Trafford Council and Amey complements the broader community work these groups do.
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL & EDUCATION -->
+<section class="social-ed" id="social">
+  <div class="section-inner">
+    <p class="section-label">Community</p>
+    <h2 class="section-title">Social & Education</h2>
+    <div class="divider"></div>
+    <div class="coming-soon-block">
+      <h3>Coming Soon</h3>
+      <p>We run ongoing events that residents can get involved in: litter picks, gardening, and growing fruit and veg. More details to follow.</p>
+      <br/>
+      <a href="#contact" class="btn-primary" style="display:inline-block;">Stay in the Loop</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="section-inner">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">Get in Touch</h2>
+    <div class="divider"></div>
+    <div class="contact-grid">
+      <div class="contact-text">
+        <p>{s.contactIntro ?? "Have a question, want to get involved, or want to report an issue in Old Trafford? Fill in the form and we'll get back to you."}</p>
+      </div>
+      <form id="contactForm" class="contact-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contact-name">Your Name</label>
+            <input type="text" id="contact-name" name="name" placeholder="Jane Smith" required/>
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Email Address</label>
+            <input type="email" id="contact-email" name="email" placeholder="jane@example.com" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="What would you like to say?" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="border:none; cursor:pointer; font-family:'Be Vietnam Pro',sans-serif;">Send Message</button>
+        <p id="contactMsg" style="display:none; font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Old Trafford Action Group</div>
+      <div class="footer-location">{s.heroLabel ?? 'Old Trafford, Manchester'}</div>
+    </div>
+    <ul class="footer-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#news">News</a></li>
+      <li><a href="#meetings">Meetings</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Old Trafford Action Group<br/>Built for the community, by the community.</div>
+  </div>
+</footer>
+
+
+<script is:inline>
+
+  const SCRIPT_URL = document.body.dataset.formEndpoint;
+
+  function submitForm(formEl, sheet, msgEl) {
+    const btn = formEl.querySelector('button[type="submit"]');
+    const fields = new FormData(formEl);
+    const params = new URLSearchParams();
+    fields.forEach((val, key) => params.append(key, val));
+    params.append('sheet', sheet);
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    fetch(SCRIPT_URL, { method: 'POST', body: params, mode: 'no-cors' })
+      .then(() => {
+        formEl.reset();
+        msgEl.textContent = 'Thank you. We\'ll be in touch soon!';
+        msgEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
+      })
+      .catch(() => {
+        msgEl.textContent = 'Something went wrong. Please try again.';
+        msgEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = sheet === 'Sign Up' ? 'Send Me Information' : 'Send Message';
+      });
+  }
+
+  document.getElementById('membershipForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    submitForm(this, 'Sign Up', document.getElementById('membershipMsg'));
+  });
+
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    submitForm(this, 'Contact', document.getElementById('contactMsg'));
+  });
+
+  // Mobile nav
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+  hamburger.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open');
+    hamburger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+  });
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => navLinks.classList.remove('open'));
+  });
+
+  // Group tag stagger
+  const staggerEls = document.querySelectorAll('.reveal-stagger');
+  const staggerObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        staggerObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  staggerEls.forEach(el => staggerObserver.observe(el));
+
+  // Hero parallax — shifts the gradient overlay
+  const heroEl = document.querySelector('.hero');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    if (scrolled < heroEl.offsetHeight * 1.5) {
+      heroEl.style.setProperty('--parallax-y', `${scrolled * 0.3}px`);
+    }
+  }, { passive: true });
+
+  // Hero carousel — slide transition
+  const track = document.getElementById('carouselTrack');
+  const carouselContainer = document.querySelector('.hero-carousel');
+  const dots = carouselContainer.querySelectorAll('.carousel-dot');
+  const slides = document.querySelectorAll('.hero-carousel-slide');
+  const slideCount = slides.length;
+  let current = 0;
+  let timer;
+
+  function goTo(index) {
+    current = index;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  function next() { goTo((current + 1) % slideCount); }
+
+  function startTimer() { timer = setInterval(next, 4000); }
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', e => {
+      e.stopPropagation();
+      clearInterval(timer);
+      goTo(i);
+      startTimer();
+    });
+  });
+
+  startTimer();
+
+
+  // Before/after slider factory
+  function initSlider(wrapId, beforeId, handleId) {
+    const sliderEl = document.getElementById(wrapId);
+    const beforeWrap = document.getElementById(beforeId);
+    const handle = document.getElementById(handleId);
+    if (!sliderEl) return;
+    let dragging = false;
+
+    function setPos(clientX) {
+      const rect = sliderEl.getBoundingClientRect();
+      let pct = (clientX - rect.left) / rect.width;
+      pct = Math.min(Math.max(pct, 0.02), 0.98);
+      beforeWrap.style.width = (pct * 100) + '%';
+      handle.style.left = (pct * 100) + '%';
+      const beforeLabel = sliderEl.querySelector('.slider-label:first-child');
+      const afterLabel = sliderEl.querySelector('.slider-label:last-child');
+      beforeLabel.style.opacity = pct < 0.06 ? '0' : '1';
+      afterLabel.style.opacity = pct > 0.94 ? '0' : '1';
+    }
+
+    handle.addEventListener('mousedown', e => { dragging = true; e.preventDefault(); });
+    window.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX); });
+    window.addEventListener('mouseup', () => { dragging = false; });
+    handle.addEventListener('touchstart', () => { dragging = true; }, { passive: true });
+    window.addEventListener('touchmove', e => { if (dragging) setPos(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchend', () => { dragging = false; });
+  }
+
+  initSlider('slider', 'sliderBefore', 'sliderHandle');
+  document.querySelectorAll('[id^="slider-"]').forEach((el) => { const n = el.id.split('-')[1]; if (!isNaN(n)) initSlider('slider-' + n, 'sliderBefore-' + n, 'sliderHandle-' + n); });
+  initSlider('sliderHullard', 'sliderHullardBefore', 'sliderHullardHandle');
+
+  // Before/after slider
+
+
+  // Lightbox
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+
+  document.querySelectorAll('.work-gallery-item').forEach(item => {
+    item.setAttribute('role', 'button');
+    item.setAttribute('tabindex', '0');
+    item.setAttribute('aria-label', 'View photo');
+    const openLightbox = () => {
+      lightboxImg.src = item.querySelector('img').src;
+      lightboxImg.alt = item.querySelector('img').alt || '';
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      lightboxClose.focus();
+    };
+    item.addEventListener('click', openLightbox);
+    item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(); } });
+  });
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  // Hero carousel swipe
+  const carouselEl = document.querySelector('.hero-carousel');
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  carouselEl.addEventListener('touchstart', e => {
+    // Don't interfere with dot button taps
+    if (e.target.classList.contains('carousel-dot')) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  carouselEl.addEventListener('touchend', e => {
+    if (e.target.classList.contains('carousel-dot')) return;
+    const diffX = touchStartX - e.changedTouches[0].clientX;
+    const diffY = touchStartY - e.changedTouches[0].clientY;
+    // Only trigger if horizontal swipe and movement is significant
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+      clearInterval(timer);
+      goTo(diffX > 0 ? (current + 1) % slideCount : (current - 1 + slideCount) % slideCount);
+      startTimer();
+    }
+  }, { passive: true });
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+[build]
+  base = "otag-cms"
+  command = "npm run build"
+  publish = "dist"
+[build.environment]
+  NODE_VERSION = "20"
+  SANITY_PROJECT_ID = "fdsg6tk5"
+  SANITY_DATASET = "test"
