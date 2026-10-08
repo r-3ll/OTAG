@@ -6,7 +6,7 @@ const singletons = ['siteSettings'];
 
 export default defineConfig({
   name: 'otag',
-  title: 'OTAG Website (test)',
+  title: 'OTAG Website',
   projectId: 'fdsg6tk5',
   dataset: 'test',
   plugins: [
